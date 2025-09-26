@@ -4,6 +4,7 @@ import { getIP, getLocationFromIP, calculateDistance } from '@/lib/location';
 import { fetchPujas } from '@/lib/pujas';
 import type { LocationInfo } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 600; // 10 minutes
 
 export async function GET() {
