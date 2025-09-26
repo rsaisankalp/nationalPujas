@@ -42,9 +42,6 @@ export function PujaCard({ puja }: { puja: Puja }) {
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border">
       <CardHeader className="p-0 relative">
-        <Badge variant="secondary" className="absolute top-3 right-3 z-10 bg-primary/80 text-primary-foreground backdrop-blur-sm">
-          {puja.subPurpose}
-        </Badge>
         <PujaImage
           subPurpose={puja.subPurpose}
           altText={puja.eventName}
@@ -52,8 +49,9 @@ export function PujaCard({ puja }: { puja: Puja }) {
         />
       </CardHeader>
       <CardContent className="flex-grow p-4 space-y-3">
-        <CardTitle className="font-headline text-xl leading-tight h-14 line-clamp-2">{puja.eventName}</CardTitle>
-        <div className="text-muted-foreground text-sm space-y-2">
+        <CardTitle className="font-headline text-xl leading-tight">{puja.subPurpose}</CardTitle>
+        <p className="text-sm text-muted-foreground line-clamp-2 h-10">{puja.eventName}</p>
+        <div className="text-muted-foreground text-sm space-y-2 pt-2">
             <p className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary"/> <span>{formatDate(puja.date)}</span></p>
             <p className="flex items-center gap-2"><Clock className="w-4 h-4 text-primary"/> <span>{formatTime(puja.time)}</span></p>
             <p className="flex items-start gap-2"><MapPin className="w-4 h-4 mt-1 flex-shrink-0 text-primary"/> <span className="line-clamp-2">{puja.venue}</span></p>
