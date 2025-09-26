@@ -29,7 +29,7 @@ export function Header({ locations, selectedLocation, onLocationChange }: Header
         
         <div className="flex flex-1 items-center justify-end space-x-4">
             <Select value={selectedLocation} onValueChange={onLocationChange}>
-              <SelectTrigger className="w-[180px] md:w-[250px] font-semibold text-sm md:text-base">
+              <SelectTrigger className="w-auto max-w-[200px] md:max-w-[250px] font-semibold text-sm md:text-base">
                 <MapPin className="h-4 w-4 mr-2 text-primary" />
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>
