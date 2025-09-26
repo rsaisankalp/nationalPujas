@@ -1,15 +1,20 @@
 import { headers } from 'next/headers';
+import type { NextRequest } from 'next/server';
 import type { UserLocation } from './types';
 
 // Function to get user IP
-export function getIP() {
-  const forwardedFor = headers().get('x-forwarded-for');
+export function getIP(request?: NextRequest) {
+  const headersList = headers();
+  const forwardedFor = headersList.get('x-forwarded-for');
   if (forwardedFor) {
     return forwardedFor.split(',')[0].trim();
   }
-  const realIp = headers().get('x-real-ip');
+  const realIp = headersList.get('x-real-ip');
   if (realIp) {
     return realIp.trim();
+  }
+  if (request?.ip) {
+      return request.ip;
   }
   // For local development, use a public IP
   return '8.8.8.8'; 
@@ -25,7 +30,7 @@ const geoAPIs = [
       if (!response.ok) return null;
       const data = await response.json();
       if (data?.status === 'success' && data.data?.geo?.latitude && data.data?.geo?.longitude) {
-        return { latitude: data.data.geo.latitude, longitude: data.data.geo.longitude };
+        return { latitude: parseFloat(data.data.geo.latitude), longitude: parseFloat(data.data.geo.longitude) };
       }
       return null;
     } catch (error) {
