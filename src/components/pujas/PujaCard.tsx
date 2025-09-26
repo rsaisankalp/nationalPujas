@@ -10,14 +10,19 @@ import PujaImage from './PujaImage';
 
 function formatDate(dateString: string): string {
   const cleanedDateString = dateString
-    .replace(/(\d+)(st|nd|rd|th)/, '$1')
-    .replace(/(\s\d+)$/, ' 20$1');
+    .replace(/(\d+)(st|nd|rd|th)/, '$1');
 
   try {
     const date = new Date(cleanedDateString);
-    if (isNaN(date.getTime())) throw new Error('Invalid date');
+    if (isNaN(date.getTime())) { // If parsing fails, try appending current century for two-digit years
+        const withCentury = cleanedDateString.replace(/(\s\d+)$/, ' 20$1');
+        const dateWithCentury = new Date(withCentury);
+         if (isNaN(dateWithCentury.getTime())) throw new Error('Invalid date');
+         return format(dateWithCentury, 'E, MMM dd, yyyy');
+    }
     return format(date, 'E, MMM dd, yyyy');
   } catch (e) {
+    console.warn(`Could not parse date: "${dateString}". Displaying original.`);
     return dateString;
   }
 }
