@@ -1,24 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Puja } from '@/lib/types';
 import { Calendar, Clock, MapPin } from 'lucide-react';
-import placeholderData from '@/lib/placeholder-images.json';
-
-const { placeholderImages } = placeholderData;
-
-function getPujaImage(subPurpose: string): { url: string; hint: string } {
-    const imageName = subPurpose.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
-    const image = placeholderImages.find(p => p.id === imageName);
-    return {
-      url: image ? image.imageUrl : `https://picsum.photos/seed/${imageName}/600/400`,
-      hint: image ? image.imageHint : subPurpose.split(' ').slice(0, 2).join(' ')
-    };
-}
+import PujaImage from './PujaImage';
 
 function formatDate(dateString: string): string {
   const cleanedDateString = dateString
@@ -46,21 +34,16 @@ function formatTime(timeString: string): string {
 }
 
 export function PujaCard({ puja }: { puja: Puja }) {
-  const pujaImage = getPujaImage(puja.subPurpose);
-
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border">
       <CardHeader className="p-0 relative">
         <Badge variant="secondary" className="absolute top-3 right-3 z-10 bg-primary/80 text-primary-foreground backdrop-blur-sm">
           {puja.subPurpose}
         </Badge>
-        <Image
-          src={pujaImage.url}
-          alt={puja.eventName}
-          width={600}
-          height={400}
+        <PujaImage
+          subPurpose={puja.subPurpose}
+          altText={puja.eventName}
           className="w-full h-48 object-cover"
-          data-ai-hint={pujaImage.hint}
         />
       </CardHeader>
       <CardContent className="flex-grow p-4 space-y-3">
