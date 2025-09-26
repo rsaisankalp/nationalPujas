@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "sri-maha-lakshmi-homa",
+      "description": "Image for Sri Maha Lakshmi Homa puja",
+      "imageUrl": "https://images.unsplash.com/photo-1668067968961-9d79c7cdc6c9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxoaW5kdSUyMHJpdHVhbHxlbnwwfHx8fDE3NTg4MjI4NjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hindu ritual"
+    },
+    {
+      "id": "mata-ki-chowki",
+      "description": "Image for Mata Ki Chowki puja",
+      "imageUrl": "https://images.unsplash.com/photo-1568404735153-1a8b9ef84944?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxkZXZvdGlvbmFsJTIwZ2F0aGVyaW5nfGVufDB8fHx8MTc1ODg4MDExOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "devotional gathering"
+    },
+    {
+      "id": "location-banner",
+      "description": "Generic banner for a location",
+      "imageUrl": "https://images.unsplash.com/photo-1713971063155-e951fed2cb0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx0ZW1wbGUlMjBlbnRyYW5jZXxlbnwwfHx8fDE3NTg4NjAyMjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "temple entrance"
+    }
+  ]
 }
