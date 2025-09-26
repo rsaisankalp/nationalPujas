@@ -39,6 +39,10 @@ function formatTime(timeString: string): string {
 }
 
 export function PujaCard({ puja }: { puja: Puja }) {
+  const isSankalpa = puja.subPurpose === 'Navratri Sarva Homa Sankalpa';
+  const title = isSankalpa ? puja.eventName : puja.subPurpose;
+  const description = isSankalpa ? null : puja.eventName;
+
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border">
       <CardHeader className="p-0 relative">
@@ -49,8 +53,8 @@ export function PujaCard({ puja }: { puja: Puja }) {
         />
       </CardHeader>
       <CardContent className="flex-grow p-4 space-y-3">
-        <CardTitle className="font-headline text-xl leading-tight">{puja.subPurpose}</CardTitle>
-        <p className="text-sm text-muted-foreground line-clamp-2 h-10">{puja.eventName}</p>
+        <CardTitle className="font-headline text-xl leading-tight">{title}</CardTitle>
+        {description && <p className="text-sm text-muted-foreground line-clamp-2 h-10">{description}</p>}
         <div className="text-muted-foreground text-sm space-y-2 pt-2">
             <p className="flex items-center gap-2"><Calendar className="w-4 h-4 text-primary"/> <span>{formatDate(puja.date)}</span></p>
             <p className="flex items-center gap-2"><Clock className="w-4 h-4 text-primary"/> <span>{formatTime(puja.time)}</span></p>
