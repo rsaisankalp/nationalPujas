@@ -43,18 +43,6 @@ export default function PujaListClient({ pujas, locations, initialLocation }: { 
           {selectedLocationDetails && (
             <div className="mb-8 rounded-xl bg-card/80 p-4 md:p-6 shadow-md border border-border">
                 <div className="flex flex-col md:flex-row gap-4 md:gap-8 md:items-center">
-                    {locationBanner && (
-                        <div className="flex-shrink-0">
-                            <Image 
-                                src={locationBanner.imageUrl} 
-                                alt={selectedLocationDetails.locationIdentifier}
-                                width={300}
-                                height={180}
-                                className="rounded-lg object-cover w-full md:w-[300px] h-auto aspect-[5/3]"
-                                data-ai-hint={locationBanner.imageHint}
-                            />
-                        </div>
-                    )}
                     <div className="flex-1 space-y-3">
                          <h1 className="font-headline text-3xl text-accent">{selectedLocationDetails.locationIdentifier}</h1>
                          <div className="text-muted-foreground space-y-2">
