@@ -21,25 +21,25 @@ interface HeaderProps {
 export function Header({ locations, selectedLocation, onLocationChange }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
-        <div className="flex items-center gap-4 md:gap-10">
-          <a href="/" className="flex items-center space-x-2">
-            <Image 
-              src="https://i.postimg.cc/W3ghSQLw/vds-aol-transparent.png"
-              alt="VDS AOL Logo"
-              width={40}
-              height={40}
-              className="h-10 w-10"
-            />
-            <span className="inline-block font-bold text-xl md:text-2xl font-headline text-primary">VDS Navratri Homas</span>
-          </a>
-        </div>
+      <div className="container flex h-16 items-center justify-between gap-4">
+        <a href="/" className="flex items-center gap-2 flex-shrink-0">
+          <Image 
+            src="https://i.postimg.cc/W3ghSQLw/vds-aol-transparent.png"
+            alt="VDS AOL Logo"
+            width={40}
+            height={40}
+            className="h-8 w-8 md:h-10 md:w-10"
+          />
+          <span className="inline-block font-bold text-lg md:text-xl font-headline text-primary whitespace-nowrap">VDS Navratri Homas</span>
+        </a>
         
-        <div className="flex flex-1 items-center justify-end space-x-4">
+        <div className="flex items-center justify-end">
             <Select value={selectedLocation} onValueChange={onLocationChange}>
-              <SelectTrigger className="w-auto max-w-[200px] md:max-w-[250px] font-semibold text-sm md:text-base">
-                <MapPin className="h-4 w-4 mr-2 text-primary" />
-                <SelectValue placeholder="Select location" />
+              <SelectTrigger className="w-auto max-w-[150px] sm:max-w-[200px] md:max-w-[250px] font-semibold text-sm md:text-base">
+                <MapPin className="h-4 w-4 mr-2 text-primary flex-shrink-0" />
+                <div className="truncate">
+                  <SelectValue placeholder="Select location" />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 {locations.map(location => (
