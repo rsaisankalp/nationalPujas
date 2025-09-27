@@ -50,17 +50,17 @@ const geoAPIs = [
   }
 ];
 
-// NOTE: The following is a stateful round-robin implementation. In a serverless
-// environment, the state of 'lastUsedApiIndex' is not guaranteed to be preserved
-// across function invocations. This may result in the round-robin restarting
-// from the beginning for each new request, defeating the purpose of load balancing.
-// A random selection is often a more practical approach in such environments.
 let lastUsedApiIndex = -1;
 
 export async function getLocationFromIP(ip: string): Promise<UserLocation | null> {
   if (geoAPIs.length === 0) {
     console.warn("No geolocation APIs configured. Using fallback location.");
     return { latitude: 20.5937, longitude: 78.9629 };
+  }
+  
+  if (ip === '127.0.0.1' || ip === '::1') {
+      console.warn("Localhost IP detected, using fallback location.");
+      return { latitude: 20.5937, longitude: 78.9629 };
   }
 
   lastUsedApiIndex = (lastUsedApiIndex + 1) % geoAPIs.length;

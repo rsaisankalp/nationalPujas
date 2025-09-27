@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import type { Puja, LocationInfo, UserLocation } from '@/lib/types';
 import PujaListClient from '@/components/pujas/PujaListClient';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LocationPermission } from '@/components/pujas/LocationPermission';
 
 function LoadingSkeleton() {
   return (
@@ -34,12 +35,16 @@ export default function Home() {
   const [initialLocation, setInitialLocation] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userCoords, setUserCoords] = useState<UserLocation | null>(null);
+  const [locationPermissionStatus, setLocationPermissionStatus] = useState<PermissionState | 'prompt' | 'loading'>('loading');
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchData(coords: UserLocation | null) {
       try {
         setLoading(true);
-        const response = await fetch('/api/pujas');
+        const apiUrl = coords ? `/api/pujas?lat=${coords.latitude}&lon=${coords.longitude}` : '/api/pujas';
+        const response = await fetch(apiUrl);
+
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -62,8 +67,24 @@ export default function Home() {
         setLoading(false);
       }
     }
-    fetchData();
-  }, []);
+    
+    // Don't fetch until we have a location permission status
+    if (locationPermissionStatus !== 'loading' && locationPermissionStatus !== 'prompt') {
+       fetchData(userCoords);
+    }
+  }, [userCoords, locationPermissionStatus]);
+
+  if (locationPermissionStatus === 'loading') {
+      return (
+          <main className="container mx-auto px-4 py-8">
+            <LoadingSkeleton />
+          </main>
+      )
+  }
+
+  if (locationPermissionStatus === 'prompt') {
+      return <LocationPermission setStatus={setLocationPermissionStatus} setCoords={setUserCoords} />
+  }
 
   if (loading) {
     return (

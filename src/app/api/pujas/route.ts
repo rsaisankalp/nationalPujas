@@ -1,18 +1,36 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { headers } from 'next/headers';
 import { getIP, getLocationFromIP, calculateDistance } from '@/lib/location';
 import { fetchPujas } from '@/lib/pujas';
-import type { LocationInfo } from '@/lib/types';
+import type { LocationInfo, UserLocation } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 600; // 10 minutes
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const ip = getIP();
-    console.log("User IP:", ip);
-    const userLocation = await getLocationFromIP(ip);
-    console.log("User Location:", userLocation);
+    const { searchParams } = new URL(request.url);
+    const latParam = searchParams.get('lat');
+    const lonParam = searchParams.get('lon');
+
+    let userLocation: UserLocation | null = null;
+
+    if (latParam && lonParam) {
+        const lat = parseFloat(latParam);
+        const lon = parseFloat(lonParam);
+        if (!isNaN(lat) && !isNaN(lon)) {
+            console.log("Using GPS coordinates from query params:", { lat, lon });
+            userLocation = { latitude: lat, longitude: lon };
+        }
+    }
+
+    if (!userLocation) {
+        const ip = getIP(request);
+        console.log("User IP:", ip);
+        userLocation = await getLocationFromIP(ip);
+        console.log("User Location from IP:", userLocation);
+    }
+    
     const allPujas = await fetchPujas();
     
     if (!allPujas || allPujas.length === 0) {
@@ -24,15 +42,12 @@ export async function GET() {
     }
 
     const uniqueLocationsMap = new Map<string, LocationInfo>();
-    console.log("Processing Puja Locations:");
     allPujas.forEach(puja => {
       if (puja.locationIdentifier && puja.latlong && !uniqueLocationsMap.has(puja.locationIdentifier)) {
-        console.log(`- ${puja.locationIdentifier}: Original latlong='${puja.latlong}'`);
         let [lat, lng] = puja.latlong.split(',').map(s => parseFloat(s.trim()));
         if (!isNaN(lat) && !isNaN(lng)) {
           // Heuristic to fix swapped lat/lng for locations in India
           if (lat > lng) {
-            console.log(`  Swapping lat/lng: [${lat}, ${lng}] -> [${lng}, ${lat}]`);
             [lat, lng] = [lng, lat]; // Swap them
           }
           uniqueLocationsMap.set(puja.locationIdentifier, {
@@ -40,28 +55,18 @@ export async function GET() {
             lat,
             lng,
           });
-          console.log(`  Parsed as: lat=${lat}, lng=${lng}`);
-        } else {
-          console.log(`  Failed to parse latlong.`);
         }
       }
     });
 
     const locationsWithDistance: LocationInfo[] = Array.from(uniqueLocationsMap.values()).map(loc => {
       const distance = userLocation ? calculateDistance(userLocation.latitude, userLocation.longitude, loc.lat, loc.lng) : undefined;
-      console.log(`Distance to ${loc.name} (${loc.lat}, ${loc.lng}): ${distance} km`);
       return { ...loc, distance };
     });
 
     locationsWithDistance.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
-
-    console.log("Sorted Locations by Distance:");
-    locationsWithDistance.forEach(loc => {
-      console.log(`- ${loc.name}: ${loc.distance} km`);
-    });
-
+    
     const nearestLocationName = locationsWithDistance.length > 0 ? locationsWithDistance[0].name : '';
-    console.log("Nearest Location:", nearestLocationName);
     
     return NextResponse.json({
         pujas: allPujas,
