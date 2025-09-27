@@ -38,6 +38,12 @@ export default function Home() {
   const [userCoords, setUserCoords] = useState<UserLocation | null>(null);
   const [locationPermissionStatus, setLocationPermissionStatus] = useState<PermissionState | 'prompt' | 'loading'>('loading');
 
+  const handleManualLocationSelect = (locationName: string) => {
+    setInitialLocation(locationName);
+    setLocationPermissionStatus('granted'); // Bypass permission flow
+  };
+
+
   useEffect(() => {
     async function fetchData(coords: UserLocation | null) {
       try {
@@ -58,7 +64,10 @@ export default function Home() {
         }
 
         setLocations(data.locationsWithDistance);
-        setInitialLocation(data.nearestLocationName);
+        // Only set initial location if it hasn't been manually set
+        if (!initialLocation) {
+          setInitialLocation(data.nearestLocationName);
+        }
         setError(null);
       } catch (e: any) {
         console.error(e);
@@ -68,16 +77,20 @@ export default function Home() {
       }
     }
     
-    // Don't fetch until we have a location permission status
+    // Don't fetch until we have a location permission status resolved
     if (locationPermissionStatus !== 'loading' && locationPermissionStatus !== 'prompt') {
        fetchData(userCoords);
     }
-  }, [userCoords, locationPermissionStatus]);
+  }, [userCoords, locationPermissionStatus, initialLocation]);
 
   if (locationPermissionStatus === 'loading') {
       return (
           <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
-            <LocationPermission setStatus={setLocationPermissionStatus} setCoords={setUserCoords} />
+            <LocationPermission 
+                setStatus={setLocationPermissionStatus} 
+                setCoords={setUserCoords} 
+                onManualSelect={handleManualLocationSelect}
+             />
           </main>
       )
   }
@@ -85,7 +98,11 @@ export default function Home() {
   if (locationPermissionStatus === 'prompt') {
       return (
           <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
-             <LocationPermission setStatus={setLocationPermissionStatus} setCoords={setUserCoords} />
+             <LocationPermission 
+                setStatus={setLocationPermissionStatus} 
+                setCoords={setUserCoords}
+                onManualSelect={handleManualLocationSelect}
+             />
           </main>
       )
   }
