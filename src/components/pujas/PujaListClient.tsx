@@ -32,13 +32,12 @@ function ContactDetails({ contactNo }: { contactNo?: string }) {
             <div className="flex items-start gap-2">
                 <Phone className="w-4 h-4 mt-1 flex-shrink-0 text-primary"/>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-                    <span>{contactNo}</span>
+                     {isMobile ? (
+                        <a href={telLink} className="hover:underline">{contactNo}</a>
+                     ) : (
+                        <span>{contactNo}</span>
+                     )}
                     <div className="flex items-center gap-2 mt-1 sm:mt-0">
-                         {isMobile ? (
-                            <Button variant="outline" size="sm" asChild>
-                                <a href={telLink}><Phone className="mr-2 h-4 w-4"/>Call</a>
-                            </Button>
-                         ) : null}
                          <Button variant="outline" size="sm" asChild>
                             <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
                                 <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp
