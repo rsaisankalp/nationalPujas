@@ -23,6 +23,33 @@ export function getIP(request?: NextRequest) {
 const geoAPIs = [
   async (ip: string): Promise<UserLocation | null> => {
     try {
+      const response = await fetch(`https://www.iplocation.net/get-ipdata`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        },
+        body: `ip=${ip}&source=ipinfo&ipv=4`,
+        next: { revalidate: 3600 },
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      if (data?.res?.latitude && data?.res?.longitude) {
+        return { latitude: parseFloat(data.res.latitude), longitude: parseFloat(data.res.longitude) };
+      }
+      if (data?.res?.loc) {
+          const [lat, lng] = data.res.loc.split(',');
+          if (lat && lng) {
+              return { latitude: parseFloat(lat), longitude: parseFloat(lng) };
+          }
+      }
+      return null;
+    } catch (error) {
+      console.error('iplocation.net API failed:', error);
+      return null;
+    }
+  },
+  async (ip: string): Promise<UserLocation | null> => {
+    try {
       const response = await fetch(`http://ipwho.is/${ip}`, { next: { revalidate: 3600 } });
       if (!response.ok) return null;
       const data = await response.json();
