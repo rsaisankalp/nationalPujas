@@ -52,40 +52,50 @@ export function LocationPermission({ setStatus, setCoords }: LocationPermissionP
   
   // Initial check on component mount
   useEffect(() => {
-    if (typeof window !== 'undefined' && navigator.permissions) {
-      navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
-        const updateStatus = (status: PermissionState) => {
-            if (status === 'granted') {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    setCoords({
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                    });
-                    setStatus('granted');
-                });
-            } else if (status === 'denied') {
-                setShowDeniedMessage(true);
-                setStatus('prompt'); // Allow user to see the prompt and choose to continue without location
-            } else {
-                setStatus('prompt');
-            }
-        }
+    const checkPermissions = async () => {
+      if (typeof window !== 'undefined' && navigator.permissions) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
 
-        updateStatus(permissionStatus.state);
-        
-        permissionStatus.onchange = () => {
+          const updateStatus = (status: PermissionState) => {
+            if (status === 'granted') {
+              navigator.geolocation.getCurrentPosition((position) => {
+                setCoords({
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                });
+                setStatus('granted');
+              });
+            } else if (status === 'denied') {
+              setShowDeniedMessage(true);
+              setStatus('prompt'); // Allow user to see the prompt and choose to continue without location
+            } else {
+              setStatus('prompt');
+            }
+          };
+
           updateStatus(permissionStatus.state);
-        };
-      });
-    } else if (typeof window !== 'undefined' && navigator.geolocation) {
+
+          permissionStatus.onchange = () => {
+            updateStatus(permissionStatus.state);
+          };
+        } catch (error) {
+           console.error("Error querying geolocation permission:", error);
+           setStatus('denied');
+           setCoords(null);
+        }
+      } else if (typeof window !== 'undefined' && navigator.geolocation) {
         // Fallback for older browsers
         setStatus('prompt');
-    } else {
+      } else {
         // Fallback if geolocation is not supported at all
         setStatus('denied');
         setCoords(null);
-    }
-  }, []);
+      }
+    };
+    checkPermissions();
+  }, [setCoords, setStatus]);
+
 
   const useIPLocation = () => {
     setStatus('denied');
