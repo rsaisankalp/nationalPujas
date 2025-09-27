@@ -31,7 +31,7 @@ export function Header({ locations, selectedLocation, onLocationChange }: Header
               height={40}
               className="h-10 w-10"
             />
-            <span className="inline-block font-bold text-xl md:text-2xl font-headline text-primary">Vaidic Pujas</span>
+            <span className="inline-block font-bold text-xl md:text-2xl font-headline text-primary">VAIDIC DHARMA SANSTHAN</span>
           </a>
         </div>
         
