@@ -12,6 +12,7 @@ export interface Puja {
   mapLocation: string;
   latlong: string;
   registrationLink: string;
+  contactNo?: string;
 }
 
 export interface LocationInfo {

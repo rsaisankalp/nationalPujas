@@ -6,9 +6,11 @@ import type { Puja, LocationInfo } from '@/lib/types';
 import { PujaCard } from './PujaCard';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
-import { MapPin, Tag } from 'lucide-react';
+import { MapPin, Tag, Phone, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import placeholderData from '@/lib/placeholder-images.json';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 const { placeholderImages } = placeholderData;
 
@@ -16,6 +18,39 @@ function getVenueDetails(puja: Puja) {
   const venueDetails = [puja.venue, puja.city, puja.district, puja.state].filter(Boolean);
   return [...new Set(venueDetails)].join(', ');
 }
+
+function ContactDetails({ contactNo }: { contactNo?: string }) {
+    const isMobile = useIsMobile();
+    if (!contactNo) return null;
+
+    const cleanContactNo = contactNo.replace(/\D/g, '');
+    const whatsappLink = `https://wa.me/${cleanContactNo}`;
+    const telLink = `tel:${cleanContactNo}`;
+
+    return (
+        <div className="text-muted-foreground space-y-2">
+            <div className="flex items-start gap-2">
+                <Phone className="w-4 h-4 mt-1 flex-shrink-0 text-primary"/>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                    <span>{contactNo}</span>
+                    <div className="flex items-center gap-2 mt-1 sm:mt-0">
+                         {isMobile ? (
+                            <Button variant="outline" size="sm" asChild>
+                                <a href={telLink}><Phone className="mr-2 h-4 w-4"/>Call</a>
+                            </Button>
+                         ) : null}
+                         <Button variant="outline" size="sm" asChild>
+                            <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                                <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp
+                            </a>
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 
 export default function PujaListClient({ pujas, locations, initialLocation }: { pujas: Puja[], locations: LocationInfo[], initialLocation: string }) {
   const [selectedLocation, setSelectedLocation] = useState(initialLocation);
@@ -49,6 +84,7 @@ export default function PujaListClient({ pujas, locations, initialLocation }: { 
                             <p className="flex items-start gap-2"><MapPin className="w-4 h-4 mt-1 flex-shrink-0 text-primary"/> <span>{getVenueDetails(selectedLocationDetails)}</span></p>
                             <p className="flex items-center gap-2"><Tag className="w-4 h-4 text-primary"/> <span>{selectedLocationDetails.district}, {selectedLocationDetails.state}</span></p>
                          </div>
+                         <ContactDetails contactNo={selectedLocationDetails.contactNo} />
                          <Button asChild variant="outline">
                             <a href={selectedLocationDetails.mapLocation} target="_blank" rel="noopener noreferrer">
                                 <MapPin className="mr-2 h-4 w-4" /> View on Map

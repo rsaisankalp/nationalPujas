@@ -40,7 +40,7 @@ export async function fetchPujas(): Promise<Puja[]> {
     const headers = parsed[0]; 
     const pujas: Puja[] = parsed.slice(1).map(row => {
       // Basic validation
-      if (row.length < headers.length || !row[0]) return null;
+      if (row.length < headers.length -1 || !row[0]) return null; // headers.length can be 14, but row only 13 if last column is empty
 
       return {
         id: row[0],
@@ -56,6 +56,7 @@ export async function fetchPujas(): Promise<Puja[]> {
         mapLocation: row[10],
         latlong: row[11],
         registrationLink: row[12],
+        contactNo: row[13] || '',
       };
     }).filter((p): p is Puja => p !== null);
     
