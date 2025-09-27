@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import { MapPin } from 'lucide-react';
 import {
   Select,
@@ -21,8 +22,15 @@ export function Header({ locations, selectedLocation, onLocationChange }: Header
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
-        <div className="flex gap-6 md:gap-10">
+        <div className="flex items-center gap-4 md:gap-10">
           <a href="/" className="flex items-center space-x-2">
+            <Image 
+              src="https://i.postimg.cc/W3ghSQLw/vds-aol-transparent.png"
+              alt="VDS AOL Logo"
+              width={40}
+              height={40}
+              className="h-10 w-10"
+            />
             <span className="inline-block font-bold text-xl md:text-2xl font-headline text-primary">Vaidic Pujas</span>
           </a>
         </div>
