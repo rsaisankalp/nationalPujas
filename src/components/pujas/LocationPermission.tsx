@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { UserLocation } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { MapPin, AlertTriangle, Info } from 'lucide-react';
+import { MapPin, AlertTriangle, Info, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
@@ -13,21 +13,67 @@ interface LocationPermissionProps {
 }
 
 export function LocationPermission({ setStatus, setCoords }: LocationPermissionProps) {
-  const [showDeniedMessage, setShowDeniedMessage] = useState(false);
+  const [internalState, setInternalState] = useState<'checking' | 'prompt' | 'denied'>('checking');
   const [retries, setRetries] = useState(0);
   const MAX_RETRIES = 1;
 
+  useEffect(() => {
+    const checkPermissions = async () => {
+      if (typeof window !== 'undefined' && navigator.permissions) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+          
+          if (permissionStatus.state === 'granted') {
+             navigator.geolocation.getCurrentPosition((position) => {
+                setCoords({
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                });
+                setStatus('granted');
+              });
+          } else if (permissionStatus.state === 'prompt') {
+            setInternalState('prompt');
+            setStatus('prompt');
+          } else { // denied
+            setInternalState('denied');
+            setStatus('prompt');
+          }
+
+          permissionStatus.onchange = () => {
+              if (permissionStatus.state === 'granted') {
+                 navigator.geolocation.getCurrentPosition((position) => {
+                    setCoords({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+                    setStatus('granted');
+                });
+              } else {
+                 setInternalState('denied');
+                 setStatus('prompt');
+              }
+          };
+
+        } catch (error) {
+           console.error("Error querying geolocation permission:", error);
+           useIPLocation(); // Fallback on error
+        }
+      } else if (typeof window !== 'undefined' && navigator.geolocation) {
+        setInternalState('prompt');
+        setStatus('prompt');
+      } else {
+        useIPLocation(); // Fallback if no support
+      }
+    };
+    checkPermissions();
+  }, [setCoords, setStatus]);
+
+
   const handlePermissionRequest = () => {
     if (!navigator.geolocation) {
-      // Geolocation not supported, fallback to IP
-      setStatus('denied');
-      setCoords(null);
+      useIPLocation();
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        // Success
         setCoords({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
@@ -35,76 +81,40 @@ export function LocationPermission({ setStatus, setCoords }: LocationPermissionP
         setStatus('granted');
       },
       (error) => {
-        // Error
         console.warn(`Geolocation error: ${error.message}`);
-        setShowDeniedMessage(true);
+        setInternalState('denied');
         if (retries < MAX_RETRIES) {
           setRetries(prev => prev + 1);
-          setStatus('prompt');
         } else {
-          // Max retries reached, fallback to IP
-          setStatus('denied');
-          setCoords(null);
+          useIPLocation();
         }
       }
     );
   };
-  
-  // Initial check on component mount
-  useEffect(() => {
-    const checkPermissions = async () => {
-      if (typeof window !== 'undefined' && navigator.permissions) {
-        try {
-          const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-
-          const updateStatus = (status: PermissionState) => {
-            if (status === 'granted') {
-              navigator.geolocation.getCurrentPosition((position) => {
-                setCoords({
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
-                });
-                setStatus('granted');
-              });
-            } else if (status === 'denied') {
-              setShowDeniedMessage(true);
-              setStatus('prompt'); // Allow user to see the prompt and choose to continue without location
-            } else {
-              setStatus('prompt');
-            }
-          };
-
-          updateStatus(permissionStatus.state);
-
-          permissionStatus.onchange = () => {
-            updateStatus(permissionStatus.state);
-          };
-        } catch (error) {
-           console.error("Error querying geolocation permission:", error);
-           setStatus('denied');
-           setCoords(null);
-        }
-      } else if (typeof window !== 'undefined' && navigator.geolocation) {
-        // Fallback for older browsers
-        setStatus('prompt');
-      } else {
-        // Fallback if geolocation is not supported at all
-        setStatus('denied');
-        setCoords(null);
-      }
-    };
-    checkPermissions();
-  }, [setCoords, setStatus]);
-
 
   const useIPLocation = () => {
-    setStatus('denied');
     setCoords(null);
+    setStatus('denied');
   };
 
+  if (internalState === 'checking') {
+     return (
+         <Card className="w-full max-w-md text-center shadow-lg">
+            <CardHeader>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
+                    <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                </div>
+                <CardTitle className="font-headline text-2xl">Checking Location...</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                    Please wait while we check your location settings.
+                </CardDescription>
+            </CardHeader>
+         </Card>
+     )
+  }
+
   return (
-    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md text-center shadow-lg">
+    <Card className="w-full max-w-md text-center shadow-lg">
         <CardHeader>
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
             <MapPin className="h-6 w-6 text-primary" />
@@ -115,21 +125,21 @@ export function LocationPermission({ setStatus, setCoords }: LocationPermissionP
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-            {showDeniedMessage && retries < MAX_RETRIES && (
+            {internalState === 'denied' && retries < MAX_RETRIES && (
                  <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertTitle>Location Access Denied</AlertTitle>
                   <AlertDescription>
-                    You've blocked location access. To find pujas nearest to you, please enable location permissions in your browser settings or click allow again.
+                    You've blocked location access. Please enable it in your browser settings or click allow again.
                   </AlertDescription>
                 </Alert>
             )}
-             {showDeniedMessage && retries >= MAX_RETRIES && (
-                 <Alert variant="destructive">
+             {internalState === 'denied' && retries >= MAX_RETRIES && (
+                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Location Access Denied</AlertTitle>
+                  <AlertTitle>Using Approximate Location</AlertTitle>
                   <AlertDescription>
-                    Using IP-based location as a fallback. For more accuracy, please enable location permissions in your browser settings.
+                    For more accuracy, please enable location permissions in your browser settings and refresh the page.
                   </AlertDescription>
                 </Alert>
             )}
@@ -138,7 +148,7 @@ export function LocationPermission({ setStatus, setCoords }: LocationPermissionP
             Allow Location Access
           </Button>
           <Button onClick={useIPLocation} variant="outline" className="w-full">
-            Continue without precise location
+            Continue with approximate location
           </Button>
 
            <div className="flex items-start gap-2 rounded-md border bg-muted/50 p-3 text-left text-xs text-muted-foreground">
@@ -150,6 +160,5 @@ export function LocationPermission({ setStatus, setCoords }: LocationPermissionP
 
         </CardContent>
       </Card>
-    </main>
   );
 }

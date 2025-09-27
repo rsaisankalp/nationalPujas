@@ -76,14 +76,18 @@ export default function Home() {
 
   if (locationPermissionStatus === 'loading') {
       return (
-          <main className="container mx-auto px-4 py-8">
-            <LoadingSkeleton />
+          <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
+            <LocationPermission setStatus={setLocationPermissionStatus} setCoords={setUserCoords} />
           </main>
       )
   }
 
   if (locationPermissionStatus === 'prompt') {
-      return <LocationPermission setStatus={setLocationPermissionStatus} setCoords={setUserCoords} />
+      return (
+          <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
+             <LocationPermission setStatus={setLocationPermissionStatus} setCoords={setUserCoords} />
+          </main>
+      )
   }
 
   if (loading) {
