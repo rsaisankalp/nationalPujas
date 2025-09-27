@@ -47,37 +47,7 @@ const geoAPIs = [
       console.error('iplocation.net API failed:', error);
       return null;
     }
-  },
-  async (ip: string): Promise<UserLocation | null> => {
-    try {
-      const response = await fetch(`http://ipwho.is/${ip}`, { next: { revalidate: 3600 } });
-      if (!response.ok) return null;
-      const data = await response.json();
-      if (data?.success && data.latitude && data.longitude) {
-        return { latitude: data.latitude, longitude: data.longitude };
-      }
-      return null;
-    } catch (error) {
-      console.error('ipwho.is API failed:', error);
-      return null;
-    }
-  },
-  async (ip: string): Promise<UserLocation | null> => {
-    try {
-      // Note: This is a public access key and may be subject to rate limits.
-      const accessKey = 'f6234f6e59e260e944f71e7e0661056b';
-      const response = await fetch(`https://api.ipapi.com/api/${ip}?access_key=${accessKey}`, { next: { revalidate: 3600 } });
-      if (!response.ok) return null;
-      const data = await response.json();
-      if (data?.latitude && data?.longitude) {
-        return { latitude: data.latitude, longitude: data.longitude };
-      }
-      return null;
-    } catch (error) {
-      console.error('ipapi.com API failed:', error);
-      return null;
-    }
-  },
+  }
 ];
 
 // NOTE: The following is a stateful round-robin implementation. In a serverless
