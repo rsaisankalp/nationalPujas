@@ -28,22 +28,20 @@ function ContactDetails({ contactNo }: { contactNo?: string }) {
     const telLink = `tel:${cleanContactNo}`;
 
     return (
-        <div className="text-muted-foreground space-y-2">
-            <div className="flex items-start gap-2">
-                <Phone className="w-4 h-4 mt-1 flex-shrink-0 text-primary"/>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+        <div className="text-muted-foreground">
+            <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 flex-shrink-0 text-primary"/>
+                <div className="flex items-center gap-4">
                      {isMobile ? (
-                        <a href={telLink} className="hover:underline">{contactNo}</a>
+                        <a href={telLink} className="hover:underline font-medium">{contactNo}</a>
                      ) : (
-                        <span>{contactNo}</span>
+                        <span className="font-medium">{contactNo}</span>
                      )}
-                    <div className="flex items-center gap-2 mt-1 sm:mt-0">
-                         <Button variant="outline" size="sm" asChild>
-                            <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                                <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp
-                            </a>
-                        </Button>
-                    </div>
+                     <Button variant="outline" size="sm" asChild>
+                        <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                            <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp
+                        </a>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -79,11 +77,11 @@ export default function PujaListClient({ pujas, locations, initialLocation }: { 
                 <div className="flex flex-col md:flex-row gap-4 md:gap-8 md:items-center">
                     <div className="flex-1 space-y-3">
                          <h1 className="font-headline text-3xl text-accent">{selectedLocationDetails.locationIdentifier}</h1>
-                         <div className="text-muted-foreground space-y-2">
+                         <div className="space-y-2 text-muted-foreground">
                             <p className="flex items-start gap-2"><MapPin className="w-4 h-4 mt-1 flex-shrink-0 text-primary"/> <span>{getVenueDetails(selectedLocationDetails)}</span></p>
                             <p className="flex items-center gap-2"><Tag className="w-4 h-4 text-primary"/> <span>{selectedLocationDetails.district}, {selectedLocationDetails.state}</span></p>
+                            <ContactDetails contactNo={selectedLocationDetails.contactNo} />
                          </div>
-                         <ContactDetails contactNo={selectedLocationDetails.contactNo} />
                          <Button asChild variant="outline">
                             <a href={selectedLocationDetails.mapLocation} target="_blank" rel="noopener noreferrer">
                                 <MapPin className="mr-2 h-4 w-4" /> View on Map
