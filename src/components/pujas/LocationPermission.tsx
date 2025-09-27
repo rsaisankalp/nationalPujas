@@ -17,7 +17,7 @@ export function LocationPermission({ setStatus, setCoords }: LocationPermissionP
   const [retries, setRetries] = useState(0);
   const MAX_RETRIES = 1;
 
-  const handlePermission = () => {
+  const handlePermissionRequest = () => {
     if (!navigator.geolocation) {
       // Geolocation not supported, fallback to IP
       setStatus('denied');
@@ -40,7 +40,7 @@ export function LocationPermission({ setStatus, setCoords }: LocationPermissionP
         setShowDeniedMessage(true);
         if (retries < MAX_RETRIES) {
           setRetries(prev => prev + 1);
-          // Stay on 'prompt' status to allow another try
+          setStatus('prompt');
         } else {
           // Max retries reached, fallback to IP
           setStatus('denied');
@@ -52,29 +52,38 @@ export function LocationPermission({ setStatus, setCoords }: LocationPermissionP
   
   // Initial check on component mount
   useEffect(() => {
-    if (navigator.permissions) {
+    if (typeof window !== 'undefined' && navigator.permissions) {
       navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
-        if (permissionStatus.state === 'granted') {
-          handlePermission();
-        } else if (permissionStatus.state === 'prompt') {
-            setStatus('prompt');
-        } else if (permissionStatus.state === 'denied') {
-            setShowDeniedMessage(true);
-            if (retries >= MAX_RETRIES) {
-                setStatus('denied');
-                setCoords(null);
+        const updateStatus = (status: PermissionState) => {
+            if (status === 'granted') {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    setCoords({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                    });
+                    setStatus('granted');
+                });
+            } else if (status === 'denied') {
+                setShowDeniedMessage(true);
+                setStatus('prompt'); // Allow user to see the prompt and choose to continue without location
             } else {
                 setStatus('prompt');
             }
         }
+
+        updateStatus(permissionStatus.state);
+        
         permissionStatus.onchange = () => {
-            setStatus(permissionStatus.state);
-            if(permissionStatus.state === 'granted') handlePermission();
+          updateStatus(permissionStatus.state);
         };
       });
-    } else {
+    } else if (typeof window !== 'undefined' && navigator.geolocation) {
         // Fallback for older browsers
         setStatus('prompt');
+    } else {
+        // Fallback if geolocation is not supported at all
+        setStatus('denied');
+        setCoords(null);
     }
   }, []);
 
@@ -96,17 +105,26 @@ export function LocationPermission({ setStatus, setCoords }: LocationPermissionP
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-            {showDeniedMessage && (
+            {showDeniedMessage && retries < MAX_RETRIES && (
                  <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertTitle>Location Access Denied</AlertTitle>
                   <AlertDescription>
-                    You've blocked location access. To find pujas nearest to you, please enable location permissions in your browser settings.
+                    You've blocked location access. To find pujas nearest to you, please enable location permissions in your browser settings or click allow again.
+                  </AlertDescription>
+                </Alert>
+            )}
+             {showDeniedMessage && retries >= MAX_RETRIES && (
+                 <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Location Access Denied</AlertTitle>
+                  <AlertDescription>
+                    Using IP-based location as a fallback. For more accuracy, please enable location permissions in your browser settings.
                   </AlertDescription>
                 </Alert>
             )}
 
-          <Button onClick={handlePermission} className="w-full font-bold" size="lg">
+          <Button onClick={handlePermissionRequest} className="w-full font-bold" size="lg">
             Allow Location Access
           </Button>
           <Button onClick={useIPLocation} variant="outline" className="w-full">
